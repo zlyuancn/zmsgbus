@@ -3,6 +3,7 @@
 ---
 
 # 获得
+
 `go get -u github.com/zlyuancn/zmsgbus`
 
 # 示例
@@ -11,28 +12,28 @@
 package main
 
 import (
-    "fmt"
-    "sync"
+	"fmt"
+	"sync"
 
-    "github.com/zlyuancn/zmsgbus"
+	"github.com/zlyuancn/zmsgbus"
 )
 
 func main() {
-    var wg sync.WaitGroup
-    wg.Add(2)
+	var wg sync.WaitGroup
+	wg.Add(2)
 
-    zmsgbus.Subscribe("topic", func(msg interface{}) {
-        fmt.Println(msg)
-        wg.Done()
-    })
+	zmsgbus.Subscribe("topic", func(msg interface{}) {
+		fmt.Println(msg)
+		wg.Done()
+	})
 
-    zmsgbus.Subscribe("topic", func(msg interface{}) {
-        fmt.Println(msg)
-        wg.Done()
-    })
+	zmsgbus.Subscribe("topic", func(msg interface{}) {
+		fmt.Println(msg)
+		wg.Done()
+	})
 
-    zmsgbus.Publish("topic", "msg")
+	zmsgbus.Publish("topic", "msg")
 
-    wg.Wait()
+	wg.Wait()
 }
 ```

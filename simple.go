@@ -1,5 +1,7 @@
 package zmsgbus
 
+var defaultMsgBus = NewMsgBus()
+
 // 发布
 func Publish(topic string, msg interface{}) {
 	defaultMsgBus.Publish(topic, msg)

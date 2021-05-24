@@ -12,15 +12,6 @@ import (
 	"sync"
 )
 
-// 处理函数
-type ProcessFn func(topic string, msg interface{})
-
-// 订阅者
-type subscriber struct {
-	fn    ProcessFn
-	queue chan interface{}
-}
-
 // 主题们
 type msgTopics map[string]*msgTopic
 

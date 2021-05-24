@@ -26,8 +26,6 @@ type MessageBus interface {
 	Close(topic string)
 }
 
-var defaultMsgBus = NewMsgBus()
-
 // 消息总线
 type msgBus struct {
 	queueSize int

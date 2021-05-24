@@ -13,7 +13,7 @@ import (
 )
 
 // 处理函数
-type ProcessFn func(msg interface{})
+type ProcessFn func(topic string, msg interface{})
 
 // 订阅者
 type subscriber struct {
@@ -26,13 +26,15 @@ type msgTopics map[string]*msgTopic
 
 // 主题
 type msgTopic struct {
+	name  string
 	subId uint32
 	subs  map[uint32]*subscriber
 	mx    sync.RWMutex
 }
 
-func newMsgTopic() *msgTopic {
+func newMsgTopic(topic string) *msgTopic {
 	return &msgTopic{
+		name: topic,
 		subs: make(map[uint32]*subscriber),
 	}
 }
@@ -53,7 +55,7 @@ func (m *msgTopic) Subscribe(queueSize int, fn ProcessFn) (subscribeId uint32) {
 
 	go func() {
 		for msg := range sub.queue {
-			sub.fn(msg)
+			sub.fn(m.name, msg)
 		}
 	}()
 

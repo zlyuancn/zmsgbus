@@ -54,7 +54,7 @@ func (m *msgBus) Subscribe(topic string, fn ProcessFn) (subscribeId uint32) {
 		m.mx.Lock()
 		t, ok = m.topics[topic]
 		if !ok {
-			t = newMsgTopic()
+			t = newMsgTopic(topic)
 			m.topics[topic] = t
 		}
 		m.mx.Unlock()

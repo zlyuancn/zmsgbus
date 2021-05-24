@@ -22,12 +22,12 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
-	zmsgbus.Subscribe("topic", func(msg interface{}) {
+	zmsgbus.Subscribe("topic", func(topic string, msg interface{}) {
 		fmt.Println(msg)
 		wg.Done()
 	})
 
-	zmsgbus.Subscribe("topic", func(msg interface{}) {
+	zmsgbus.Subscribe("topic", func(topic string, msg interface{}) {
 		fmt.Println(msg)
 		wg.Done()
 	})

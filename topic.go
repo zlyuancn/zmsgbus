@@ -10,6 +10,7 @@ package zmsgbus
 
 import (
 	"sync"
+	"sync/atomic"
 )
 
 // 主题们
@@ -17,48 +18,46 @@ type msgTopics map[string]*msgTopic
 
 // 主题
 type msgTopic struct {
-	name  string
 	subId uint32
 	subs  map[uint32]*subscriber
-	mx    sync.RWMutex
+	mx    sync.RWMutex // 用于锁 subs
 }
 
-func newMsgTopic(topic string) *msgTopic {
+func newMsgTopic() *msgTopic {
 	return &msgTopic{
-		name: topic,
 		subs: make(map[uint32]*subscriber),
 	}
 }
 
-func (m *msgTopic) Publish(msg interface{}) {
+func (m *msgTopic) Publish(topic string, msg interface{}) {
 	m.mx.RLock()
 	for _, sub := range m.subs {
-		sub.queue <- msg
+		sub.queue <- &channelMsg{
+			topic: topic,
+			msg:   msg,
+		}
 	}
 	m.mx.RUnlock()
 }
 
-func (m *msgTopic) Subscribe(queueSize int, fn ProcessFn) (subscribeId uint32) {
+func (m *msgTopic) Subscribe(queueSize int, fn Handler) (subscribeId uint32) {
 	sub := &subscriber{
-		fn:    fn,
-		queue: make(chan interface{}, queueSize),
+		handler: fn,
+		queue:   make(chan *channelMsg, queueSize),
 	}
 
 	go func() {
 		for msg := range sub.queue {
-			sub.fn(m.name, msg)
+			sub.handler(msg.topic, msg.msg)
 		}
 	}()
 
+	subId := atomic.LoadUint32(&m.subId)
+
 	m.mx.Lock()
-
-	m.subId++
-	id := m.subId
-
-	m.subs[id] = sub
-
+	m.subs[subId] = sub
 	m.mx.Unlock()
-	return id
+	return subId
 }
 
 func (m *msgTopic) Unsubscribe(subscribeId uint32) {

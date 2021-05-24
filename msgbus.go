@@ -27,7 +27,9 @@ type MessageBus interface {
 	// 取消全局订阅
 	UnsubscribeGlobal(subscribeId uint32)
 	// 关闭主题, 同时关闭所有订阅该主题的订阅者
-	Close(topic string)
+	CloseTopic(topic string)
+	// 关闭
+	Close()
 }
 
 // 消息总线
@@ -83,7 +85,7 @@ func (m *msgBus) UnsubscribeGlobal(subscribeId uint32) {
 	m.global.Unsubscribe(subscribeId)
 }
 
-func (m *msgBus) Close(topic string) {
+func (m *msgBus) CloseTopic(topic string) {
 	m.mx.Lock()
 	t, ok := m.topics[topic]
 	if ok {
@@ -94,6 +96,17 @@ func (m *msgBus) Close(topic string) {
 	if ok {
 		t.Close()
 	}
+}
+
+func (m *msgBus) Close() {
+	m.mx.Lock()
+	for _, t := range m.topics {
+		t.Close()
+	}
+	m.global.Close()
+	m.global = newMsgTopic()
+	m.topics = make(msgTopics)
+	m.mx.Unlock()
 }
 
 // 创建一个消息总线

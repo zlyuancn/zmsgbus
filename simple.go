@@ -28,6 +28,11 @@ func UnsubscribeGlobal(subscribeId uint32) {
 }
 
 // 关闭主题, 同时关闭所有订阅该主题的订阅者
-func Close(topic string) {
-	defaultMsgBus.Close(topic)
+func CloseTopic(topic string) {
+	defaultMsgBus.CloseTopic(topic)
+}
+
+// 关闭
+func Close() {
+	defaultMsgBus.Close()
 }

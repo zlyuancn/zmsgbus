@@ -66,11 +66,9 @@ func (m *msgTopic) Subscribe(queueSize int, threadCount int, handler Handler) (s
 }
 
 func (m *msgTopic) start(sub *subscriber) {
-	go func() {
-		for msg := range sub.queue {
-			sub.handler(msg.topic, msg.msg)
-		}
-	}()
+	for msg := range sub.queue {
+		sub.handler(msg.topic, msg.msg)
+	}
 }
 
 func (m *msgTopic) Unsubscribe(subscribeId uint32) {

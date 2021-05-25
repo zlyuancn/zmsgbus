@@ -16,12 +16,12 @@ func TestTopic(t *testing.T) {
 	topic2 := newMsgTopic()
 	defer topic2.Close()
 
-	subscribe1 := topic1.Subscribe(10, func(topic string, msg interface{}) {
+	subscribe1 := topic1.Subscribe(10, 0, func(topic string, msg interface{}) {
 		fmt.Println("subscribe.topic1", msg)
 		wg.Done()
 	})
 
-	subscribe2 := topic2.Subscribe(10, func(topic string, msg interface{}) {
+	subscribe2 := topic2.Subscribe(10, 0, func(topic string, msg interface{}) {
 		fmt.Println("subscribe.topic2", msg)
 		wg.Done()
 	})

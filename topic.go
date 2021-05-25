@@ -9,6 +9,7 @@
 package zmsgbus
 
 import (
+	"runtime"
 	"sync"
 	"sync/atomic"
 )
@@ -40,17 +41,21 @@ func (m *msgTopic) Publish(topic string, msg interface{}) {
 	m.mx.RUnlock()
 }
 
-func (m *msgTopic) Subscribe(queueSize int, fn Handler) (subscribeId uint32) {
+func (m *msgTopic) Subscribe(queueSize int, threadCount int, handler Handler) (subscribeId uint32) {
 	sub := &subscriber{
-		handler: fn,
+		handler: handler,
 		queue:   make(chan *channelMsg, queueSize),
 	}
 
-	go func() {
-		for msg := range sub.queue {
-			sub.handler(msg.topic, msg.msg)
+	if threadCount < 1 {
+		threadCount = runtime.NumCPU() >> 1
+		if threadCount < 1 {
+			threadCount = 1
 		}
-	}()
+	}
+	for i := 0; i < threadCount; i++ {
+		go m.start(sub)
+	}
 
 	subId := atomic.LoadUint32(&m.subId)
 
@@ -58,6 +63,14 @@ func (m *msgTopic) Subscribe(queueSize int, fn Handler) (subscribeId uint32) {
 	m.subs[subId] = sub
 	m.mx.Unlock()
 	return subId
+}
+
+func (m *msgTopic) start(sub *subscriber) {
+	go func() {
+		for msg := range sub.queue {
+			sub.handler(msg.topic, msg.msg)
+		}
+	}()
 }
 
 func (m *msgTopic) Unsubscribe(subscribeId uint32) {

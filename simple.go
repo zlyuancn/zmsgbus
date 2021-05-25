@@ -8,13 +8,13 @@ func Publish(topic string, msg interface{}) {
 }
 
 // 订阅, 返回订阅号
-func Subscribe(topic string, fn Handler) (subscribeId uint32) {
-	return defaultMsgBus.Subscribe(topic, fn)
+func Subscribe(topic string, threadCount int, handler Handler) (subscribeId uint32) {
+	return defaultMsgBus.Subscribe(topic, threadCount, handler)
 }
 
 // 全局订阅, 会收到所有消息, 返回订阅号
-func SubscribeGlobal(fn Handler) (subscribeId uint32) {
-	return defaultMsgBus.SubscribeGlobal(fn)
+func SubscribeGlobal(threadCount int, handler Handler) (subscribeId uint32) {
+	return defaultMsgBus.SubscribeGlobal(threadCount, handler)
 }
 
 // 取消订阅

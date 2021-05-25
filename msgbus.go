@@ -19,9 +19,9 @@ type MessageBus interface {
 	// 发布
 	Publish(topic string, msg interface{})
 	// 订阅, 返回订阅号
-	Subscribe(topic string, handler Handler) (subscribeId uint32)
+	Subscribe(topic string, threadCount int, handler Handler) (subscribeId uint32)
 	// 全局订阅, 会收到所有消息
-	SubscribeGlobal(handler Handler) (subscribeId uint32)
+	SubscribeGlobal(threadCount int, handler Handler) (subscribeId uint32)
 	// 取消订阅
 	Unsubscribe(topic string, subscribeId uint32)
 	// 取消全局订阅
@@ -52,7 +52,7 @@ func (m *msgBus) Publish(topic string, msg interface{}) {
 	}
 }
 
-func (m *msgBus) Subscribe(topic string, handler Handler) (subscribeId uint32) {
+func (m *msgBus) Subscribe(topic string, threadCount int, handler Handler) (subscribeId uint32) {
 	m.mx.RLock()
 	t, ok := m.topics[topic]
 	m.mx.RUnlock()
@@ -66,10 +66,10 @@ func (m *msgBus) Subscribe(topic string, handler Handler) (subscribeId uint32) {
 		}
 		m.mx.Unlock()
 	}
-	return t.Subscribe(m.queueSize, handler)
+	return t.Subscribe(m.queueSize, threadCount, handler)
 }
-func (m *msgBus) SubscribeGlobal(handler Handler) (subscribeId uint32) {
-	return m.global.Subscribe(m.queueSize, handler)
+func (m *msgBus) SubscribeGlobal(threadCount int, handler Handler) (subscribeId uint32) {
+	return m.global.Subscribe(m.queueSize, threadCount, handler)
 }
 
 func (m *msgBus) Unsubscribe(topic string, subscribeId uint32) {

@@ -11,7 +11,6 @@ package zmsgbus
 import (
 	"runtime"
 	"sync"
-	"sync/atomic"
 )
 
 // 主题们
@@ -19,9 +18,8 @@ type msgTopics map[string]*msgTopic
 
 // 主题
 type msgTopic struct {
-	subId uint32
-	subs  map[uint32]*subscriber
-	mx    sync.RWMutex // 用于锁 subs
+	subs map[uint32]*subscriber
+	mx   sync.RWMutex // 用于锁 subs
 }
 
 func newMsgTopic() *msgTopic {
@@ -57,7 +55,7 @@ func (m *msgTopic) Subscribe(queueSize int, threadCount int, handler Handler) (s
 		go m.start(sub)
 	}
 
-	subId := atomic.LoadUint32(&m.subId)
+	subId := nextSubscriberId()
 
 	m.mx.Lock()
 	m.subs[subId] = sub

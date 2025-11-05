@@ -1,6 +1,7 @@
 package zmsgbus
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"testing"
@@ -8,25 +9,28 @@ import (
 
 func TestSimple(t *testing.T) {
 	var wg sync.WaitGroup
-	wg.Add(4)
+	wg.Add(4) // global两次
 
-	Subscribe("topic1", 1, func(topic string, msg interface{}) {
-		fmt.Println("Subscribe.topic1", topic, msg)
+	Publish(context.Background(), "topic1", "msg")
+
+	Subscribe("topic1", 0, func(ctx context.Context, msg Message) {
+		fmt.Println("Subscribe.topic1", msg.Topic(), msg)
 		wg.Done()
 	})
 
-	Subscribe("topic2", 1, func(topic string, msg interface{}) {
-		fmt.Println("Subscribe.topic2", topic, msg)
+	Subscribe("topic2", 0, func(ctx context.Context, msg Message) {
+		fmt.Println("Subscribe.topic2", msg.Topic(), msg)
 		wg.Done()
 	})
 
-	SubscribeGlobal(1, func(topic string, msg interface{}) {
-		fmt.Println("SubscribeGlobal", topic, msg)
+	// 全局订阅
+	SubscribeGlobal(0, func(ctx context.Context, msg Message) {
+		fmt.Println("SubscribeGlobal", msg.Topic(), msg)
 		wg.Done()
 	})
 
-	Publish("topic1", "msg")
-	Publish("topic2", "msg")
+	Publish(context.Background(), "topic1", "msg")
+	Publish(context.Background(), "topic2", "msg")
 
 	wg.Wait()
 }

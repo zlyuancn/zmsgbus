@@ -12,34 +12,40 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"sync"
+	"time"
 
 	"github.com/zlyuancn/zmsgbus"
 )
 
 func main() {
-	var wg sync.WaitGroup
-	wg.Add(4)
+	// 订阅前发消息是无意义的
+	zmsgbus.Publish(context.Background(), "topic1", "msg")
 
-	zmsgbus.Subscribe("topic1", 1, func(topic string, msg interface{}) {
-		fmt.Println("Subscribe.topic1", topic, msg)
-		wg.Done()
+	// 订阅 topic1
+	zmsgbus.Subscribe("topic1", 0, func(ctx context.Context, msg Message) {
+		fmt.Println("Subscribe.topic1", msg.Topic(), msg)
 	})
 
-	zmsgbus.Subscribe("topic2", 1, func(topic string, msg interface{}) {
-		fmt.Println("Subscribe.topic2", topic, msg)
-		wg.Done()
+	// 订阅 topic2
+	zmsgbus.Subscribe("topic2", 0, func(ctx context.Context, msg Message) {
+		fmt.Println("Subscribe.topic2", msg.Topic(), msg)
 	})
 
-	zmsgbus.SubscribeGlobal(1, func(topic string, msg interface{}) {
-		fmt.Println("SubscribeGlobal", topic, msg)
-		wg.Done()
+	// 订阅全局
+	zmsgbus.SubscribeGlobal(0, func(ctx context.Context, msg Message) {
+		fmt.Println("SubscribeGlobal", msg.Topic(), msg)
 	})
 
-	zmsgbus.Publish("topic1", "msg")
-	zmsgbus.Publish("topic2", "msg")
+	zmsgbus.Publish(context.Background(), "topic1", "msg")
+	zmsgbus.Publish(context.Background(), "topic2", "msg")
 
-	wg.Wait()
+	// 等待消息消费
+	time.Sleep(time.Second)
+
+	// 程序关闭前注意要关闭消息中心
+	zmsgbus.Close()
 }
+
 ```

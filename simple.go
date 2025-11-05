@@ -1,10 +1,14 @@
 package zmsgbus
 
+import (
+	"context"
+)
+
 var defaultMsgBus = NewMsgBus()
 
 // 发布
-func Publish(topic string, msg interface{}) {
-	defaultMsgBus.Publish(topic, msg)
+func Publish(ctx context.Context, topic string, msg interface{}) {
+	defaultMsgBus.Publish(ctx, topic, msg)
 }
 
 // 订阅, 返回订阅号
